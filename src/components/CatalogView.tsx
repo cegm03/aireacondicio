@@ -24,7 +24,7 @@ import ViewListIcon from '@mui/icons-material/ViewList';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import VolumeDownIcon from '@mui/icons-material/VolumeDown';
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
-import { type AirConditioner } from '../utils/csvParser';
+import { type AirConditioner } from '../utils/firebaseService';
 
 interface CatalogViewProps {
   data: AirConditioner[];

@@ -19,7 +19,7 @@ import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import DescriptionIcon from '@mui/icons-material/Description';
 import AcUnitIcon from '@mui/icons-material/AcUnit';
 
-import { fetchAndParseDataset, type AirConditioner } from './utils/csvParser';
+import { fetchAndParseDataset, type AirConditioner } from './utils/firebaseService';
 import { SidebarFilters, type FilterState } from './components/SidebarFilters';
 import { DashboardView } from './components/DashboardView';
 import { CatalogView } from './components/CatalogView';
@@ -273,7 +273,7 @@ function App() {
           <Box sx={{ display: 'flex', flexGrow: 1, justifyContent: 'center', alignItems: 'center', py: 10 }}>
             <CircularProgress sx={{ color: 'var(--accent)' }} />
             <Typography variant="body1" sx={{ ml: 2, color: 'var(--text)' }}>
-              Cargando dataset de aires acondicionados...
+              Conectando con Firebase...
             </Typography>
           </Box>
         ) : (

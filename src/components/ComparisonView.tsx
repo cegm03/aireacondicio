@@ -18,7 +18,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import VolumeDownIcon from '@mui/icons-material/VolumeDown';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import StarIcon from '@mui/icons-material/Star';
-import { type AirConditioner } from '../utils/csvParser';
+import { type AirConditioner } from '../utils/firebaseService';
 
 interface ComparisonViewProps {
   selectedItems: AirConditioner[];

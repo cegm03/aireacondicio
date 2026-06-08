@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Grid, Card, CardContent, Typography } from '@mui/material';
-import { type AirConditioner } from '../utils/csvParser';
+import { type AirConditioner } from '../utils/firebaseService';
 import AcUnitIcon from '@mui/icons-material/AcUnit';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import StarIcon from '@mui/icons-material/Star';
