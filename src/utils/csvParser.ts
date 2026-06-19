@@ -35,15 +35,13 @@ function parseCSVLine(line: string): string[] {
 
 export async function fetchAndParseDataset(): Promise<AirConditioner[]> {
   try {
-    const response = await fetch('/public/Air_condition_dataset.csv');
-    // If fetching from /public/ fails (in some dev environments/production builds), try fetching from root path
-    const finalResponse = response.ok ? response : await fetch('/Air_condition_dataset.csv');
+    const response = await fetch('/Air_condition_dataset.csv');
     
-    if (!finalResponse.ok) {
-      throw new Error(`Failed to load dataset: ${finalResponse.statusText}`);
+    if (!response.ok) {
+      throw new Error(`Failed to load dataset: ${response.statusText}`);
     }
 
-    const text = await finalResponse.text();
+    const text = await response.text();
     const lines = text.split('\n').filter(line => line.trim().length > 0);
     
     // The first line is the header

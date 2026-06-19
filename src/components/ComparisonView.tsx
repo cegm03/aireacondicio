@@ -1,14 +1,9 @@
 import React from 'react';
 import {
   Box,
-  Grid,
   Card,
   CardContent,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
   Button,
   Rating,
   IconButton,
@@ -19,6 +14,10 @@ import VolumeDownIcon from '@mui/icons-material/VolumeDown';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import StarIcon from '@mui/icons-material/Star';
 import { type AirConditioner } from '../utils/firebaseService';
+
+import GridUI from './common/GridUI';
+import AlertUI from './common/AlertUI';
+import TableUI from './common/TableUI';
 
 interface ComparisonViewProps {
   selectedItems: AirConditioner[];
@@ -33,26 +32,28 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
 }) => {
   if (selectedItems.length === 0) {
     return (
-      <Box sx={{ py: 8, px: 2, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ color: 'var(--text-h)', mb: 2, fontWeight: '700' }}>
-          Comparador Técnico
-        </Typography>
-        <Typography variant="body1" sx={{ color: 'var(--text)', mb: 4, maxWidth: 500, mx: 'auto' }}>
-          No has seleccionado ningún aire acondicionado para comparar. Ve al Catálogo de productos y activa el checkbox "Comparar" en los modelos de tu interés.
-        </Typography>
-        <Button
-          variant="contained"
-          onClick={goToCatalog}
-          startIcon={<ArrowBackIcon />}
-          sx={{
-            background: 'var(--accent)',
-            borderRadius: '12px',
-            textTransform: 'none',
-            '&:hover': { background: 'var(--accent)', opacity: 0.9 }
-          }}
-        >
-          Ir al Catálogo de Productos
-        </Button>
+      <Box sx={{ py: 6, px: 2 }}>
+        <AlertUI
+          severity="info"
+          title="Comparador Técnico"
+          message="No has seleccionado ningún aire acondicionado para comparar. Ve al Catálogo de productos y activa el checkbox 'Comparar' en los modelos de tu interés."
+          action={
+            <Button
+              variant="contained"
+              onClick={goToCatalog}
+              startIcon={<ArrowBackIcon />}
+              sx={{
+                background: 'var(--accent)',
+                borderRadius: '12px',
+                textTransform: 'none',
+                '&:hover': { background: 'var(--accent)', opacity: 0.9 },
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Ir al Catálogo
+            </Button>
+          }
+        />
       </Box>
     );
   }
@@ -96,14 +97,16 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
         </Button>
       </Box>
 
-      <Grid container spacing={3}>
+      <GridUI.Container spacing={3}>
         {selectedItems.map((item) => {
           const isCheapest = item.price === minPrice && selectedItems.length > 1;
           const isBestRated = item.star === maxStar && selectedItems.length > 1 && item.star > 0;
           const isQuietest = item.noiseLevel === minNoise && selectedItems.length > 1;
 
+          const size = selectedItems.length === 1 ? 12 : selectedItems.length === 2 ? 6 : 4;
+
           return (
-            <Grid size={{ xs: 12, sm: selectedItems.length === 1 ? 12 : selectedItems.length === 2 ? 6 : 4 }} key={item.id}>
+            <GridUI.Item xs={12} sm={size} md={size} key={item.id}>
               <Card
                 sx={{
                   backgroundColor: 'var(--code-bg)',
@@ -127,6 +130,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                     '&:hover': { backgroundColor: '#dc2626' }
                   }}
                   size="small"
+                  aria-label="Quitar de la comparación"
                 >
                   <DeleteIcon fontSize="small" />
                 </IconButton>
@@ -149,42 +153,40 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                     {item.brand} Inverter {item.ton} Ton
                   </Typography>
 
-                  {/* Comparisons Matrix */}
-                  <Table size="small" sx={{ '& td, & th': { borderBottom: '1px solid var(--border)', px: 0.5, py: 1.5 } }}>
-                    <TableBody>
-                      {/* Price Row */}
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 600, color: 'var(--text)' }}>Precio</TableCell>
-                        <TableCell align="right">
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
-                            <Typography variant="subtitle1" sx={{ color: isCheapest ? '#10b981' : 'var(--text-h)', fontWeight: '800' }}>
-                              {formatRupees(item.price)}
-                            </Typography>
+                  {/* Comparisons Matrix using TableUI */}
+                  <TableUI
+                    size="small"
+                    rows={[
+                      {
+                        id: 'price',
+                        cells: [
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: 'var(--text)' }}>Precio</Typography>,
+                          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
+                              <Typography variant="subtitle1" sx={{ color: isCheapest ? '#10b981' : 'var(--text-h)', fontWeight: '800' }}>
+                                {formatRupees(item.price)}
+                              </Typography>
+                              {isCheapest && <LocalAtmIcon fontSize="small" sx={{ color: '#10b981' }} />}
+                            </Box>
                             {isCheapest && (
-                              <LocalAtmIcon fontSize="small" sx={{ color: '#10b981' }} />
+                              <Typography variant="caption" sx={{ color: '#10b981', display: 'block', fontWeight: 600 }}>
+                                ¡El precio más bajo!
+                              </Typography>
                             )}
                           </Box>
-                          {isCheapest && (
-                            <Typography variant="caption" sx={{ color: '#10b981', display: 'block', fontWeight: 600 }}>
-                              ¡El precio más bajo!
-                            </Typography>
-                          )}
-                        </TableCell>
-                      </TableRow>
-
-                      {/* Ratings Row */}
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 600, color: 'var(--text)' }}>Calificación</TableCell>
-                        <TableCell align="right">
+                        ]
+                      },
+                      {
+                        id: 'rating',
+                        cells: [
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: 'var(--text)' }}>Calificación</Typography>,
                           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                               <Rating value={item.star} readOnly precision={0.1} size="small" sx={{ color: '#ffb703' }} />
                               <Typography variant="body2" sx={{ color: isBestRated ? '#f59e0b' : 'var(--text-h)', fontWeight: '700' }}>
                                 {item.star > 0 ? item.star.toFixed(1) : 'Nuevo'}
                               </Typography>
-                              {isBestRated && (
-                                <StarIcon fontSize="small" sx={{ color: '#f59e0b' }} />
-                              )}
+                              {isBestRated && <StarIcon fontSize="small" sx={{ color: '#f59e0b' }} />}
                             </Box>
                             {item.ratingsCount > 0 && (
                               <Typography variant="caption" sx={{ color: 'var(--text)' }}>
@@ -197,60 +199,62 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                               </Typography>
                             )}
                           </Box>
-                        </TableCell>
-                      </TableRow>
-
-                      {/* Noise Level Row */}
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 600, color: 'var(--text)' }}>Nivel de Ruido</TableCell>
-                        <TableCell align="right">
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
-                            <Typography variant="body2" sx={{ color: isQuietest ? '#06b6d4' : 'var(--text-h)', fontWeight: '700' }}>
-                              {item.noiseLevel} dB
-                            </Typography>
+                        ]
+                      },
+                      {
+                        id: 'noise',
+                        cells: [
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: 'var(--text)' }}>Nivel de Ruido</Typography>,
+                          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
+                              <Typography variant="body2" sx={{ color: isQuietest ? '#06b6d4' : 'var(--text-h)', fontWeight: '700' }}>
+                                {item.noiseLevel} dB
+                              </Typography>
+                              {isQuietest && <VolumeDownIcon fontSize="small" sx={{ color: '#06b6d4' }} />}
+                            </Box>
                             {isQuietest && (
-                              <VolumeDownIcon fontSize="small" sx={{ color: '#06b6d4' }} />
+                              <Typography variant="caption" sx={{ color: '#06b6d4', display: 'block', fontWeight: 600 }}>
+                                ¡El más silencioso!
+                              </Typography>
                             )}
                           </Box>
-                          {isQuietest && (
-                            <Typography variant="caption" sx={{ color: '#06b6d4', display: 'block', fontWeight: 600 }}>
-                              ¡El más silencioso!
-                            </Typography>
-                          )}
-                        </TableCell>
-                      </TableRow>
-
-                      {/* Condenser Coil Row */}
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 600, color: 'var(--text)' }}>Condensador</TableCell>
-                        <TableCell align="right" sx={{ color: 'var(--text-h)', fontWeight: 500 }}>
-                          {item.condenserCoil === 'Copper' ? 'Cobre (Copper)' : 'Aleación (Alloy)'}
-                        </TableCell>
-                      </TableRow>
-
-                      {/* Refrigerant Row */}
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 600, color: 'var(--text)' }}>Gas Refrigerante</TableCell>
-                        <TableCell align="right" sx={{ color: 'var(--text-h)', fontWeight: 500 }}>
-                          {item.refrigerant}
-                        </TableCell>
-                      </TableRow>
-
-                      {/* Power Consumption Row */}
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 600, color: 'var(--text)' }}>Consumo Energía</TableCell>
-                        <TableCell align="right" sx={{ color: 'var(--text-h)', fontWeight: 500 }}>
-                          {item.powerConsumption}
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
+                        ]
+                      },
+                      {
+                        id: 'condenser',
+                        cells: [
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: 'var(--text)' }}>Condensador</Typography>,
+                          <Typography variant="body2" sx={{ color: 'var(--text-h)', fontWeight: 500, textAlign: 'right' }}>
+                            {item.condenserCoil === 'Copper' ? 'Cobre (Copper)' : 'Aleación (Alloy)'}
+                          </Typography>
+                        ]
+                      },
+                      {
+                        id: 'refrigerant',
+                        cells: [
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: 'var(--text)' }}>Gas Refrigerante</Typography>,
+                          <Typography variant="body2" sx={{ color: 'var(--text-h)', fontWeight: 500, textAlign: 'right' }}>
+                            {item.refrigerant}
+                          </Typography>
+                        ]
+                      },
+                      {
+                        id: 'power',
+                        cells: [
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: 'var(--text)' }}>Consumo Energía</Typography>,
+                          <Typography variant="body2" sx={{ color: 'var(--text-h)', fontWeight: 500, textAlign: 'right' }}>
+                            {item.powerConsumption}
+                          </Typography>
+                        ]
+                      }
+                    ]}
+                  />
                 </CardContent>
               </Card>
-            </Grid>
+            </GridUI.Item>
           );
         })}
-      </Grid>
+      </GridUI.Container>
     </Box>
   );
 };

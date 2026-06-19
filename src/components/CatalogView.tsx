@@ -1,16 +1,11 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Grid,
   Card,
   CardMedia,
   CardContent,
   CardActions,
   Typography,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
   Checkbox,
   FormControlLabel,
   Pagination,
@@ -21,10 +16,13 @@ import {
 import { type SelectChangeEvent } from '@mui/material/Select';
 import GridViewIcon from '@mui/icons-material/GridView';
 import ViewListIcon from '@mui/icons-material/ViewList';
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import VolumeDownIcon from '@mui/icons-material/VolumeDown';
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
 import { type AirConditioner } from '../utils/firebaseService';
+
+import SelectorUI from './common/SelectorUI';
+import AlertUI from './common/AlertUI';
+import GridUI from './common/GridUI';
 
 interface CatalogViewProps {
   data: AirConditioner[];
@@ -65,7 +63,6 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
-    // Scroll window or catalog container to top
     const element = document.getElementById('catalog-top');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
@@ -90,7 +87,6 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
     }).format(value);
   };
 
-  // Image load fallback helper
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=500&auto=format&fit=crop&q=60';
   };
@@ -119,50 +115,33 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-          {/* Sorting */}
-          <FormControl size="small" sx={{ minWidth: 160 }}>
-            <InputLabel id="sort-label" sx={{ color: 'var(--text)' }}>Ordenar por</InputLabel>
-            <Select
-              labelId="sort-label"
-              id="sort-select"
-              value={sortBy}
-              label="Ordenar por"
-              onChange={handleSortChange}
-              sx={{
-                borderRadius: '8px',
-                borderColor: 'var(--border)',
-                color: 'var(--text-h)',
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--border)' },
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--accent)' },
-              }}
-            >
-              <MenuItem value="rating-desc">Mejor Calificados</MenuItem>
-              <MenuItem value="price-asc">Precio: Menor a Mayor</MenuItem>
-              <MenuItem value="price-desc">Precio: Mayor a Menor</MenuItem>
-              <MenuItem value="noise-asc">Nivel de Ruido: Silenciosos</MenuItem>
-            </Select>
-          </FormControl>
+          {/* Sorting Selector with onChange event */}
+          <SelectorUI
+            label="Ordenar por"
+            value={sortBy}
+            onChange={handleSortChange}
+            options={[
+              { value: 'rating-desc', label: 'Mejor Calificados' },
+              { value: 'price-asc', label: 'Precio: Menor a Mayor' },
+              { value: 'price-desc', label: 'Precio: Mayor a Menor' },
+              { value: 'noise-asc', label: 'Nivel de Ruido: Silenciosos' },
+            ]}
+            id="sort"
+          />
 
-          {/* Page Size */}
-          <FormControl size="small" sx={{ minWidth: 90 }}>
-            <InputLabel id="size-label" sx={{ color: 'var(--text)' }}>Ver</InputLabel>
-            <Select
-              labelId="size-label"
-              id="size-select"
-              value={pageSize}
-              label="Ver"
-              onChange={handlePageSizeChange}
-              sx={{
-                borderRadius: '8px',
-                color: 'var(--text-h)',
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--border)' },
-              }}
-            >
-              <MenuItem value={12}>12</MenuItem>
-              <MenuItem value={24}>24</MenuItem>
-              <MenuItem value={48}>48</MenuItem>
-            </Select>
-          </FormControl>
+          {/* Page Size Selector with onChange event */}
+          <SelectorUI
+            label="Ver"
+            value={pageSize}
+            onChange={handlePageSizeChange}
+            options={[
+              { value: 12, label: '12' },
+              { value: 24, label: '24' },
+              { value: 48, label: '48' },
+            ]}
+            id="size"
+            minWidth={90}
+          />
 
           {/* View Toggle */}
           <Box sx={{ display: 'flex', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
@@ -175,6 +154,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                 color: viewMode === 'grid' ? 'var(--accent)' : 'var(--text)',
                 '&:hover': { backgroundColor: 'var(--accent-bg)' }
               }}
+              aria-label="Vista cuadrícula"
             >
               <GridViewIcon fontSize="small" />
             </IconButton>
@@ -187,6 +167,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                 color: viewMode === 'list' ? 'var(--accent)' : 'var(--text)',
                 '&:hover': { backgroundColor: 'var(--accent-bg)' }
               }}
+              aria-label="Vista lista"
             >
               <ViewListIcon fontSize="small" />
             </IconButton>
@@ -194,43 +175,34 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
         </Box>
       </Box>
 
-      {/* Product Comparison Sticky Alert */}
+      {/* Product Comparison Sticky Alert using AlertUI */}
       {selectedToCompare.length > 0 && (
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            mb: 3,
-            p: 2,
-            backgroundColor: 'var(--accent-bg)',
-            border: '1px solid var(--accent-border)',
-            borderRadius: '12px',
-          }}
-        >
-          <Typography variant="body2" sx={{ color: 'var(--text-h)', display: 'flex', alignItems: 'center', gap: 1 }}>
-            <CompareArrowsIcon sx={{ color: 'var(--accent)' }} />
-            Tienes <strong>{selectedToCompare.length}</strong> producto(s) seleccionados para comparar (máximo 3).
-          </Typography>
-        </Box>
+        <AlertUI
+          severity="warning"
+          sx={{ mb: 3 }}
+          message={
+            <span>
+              Tienes <strong>{selectedToCompare.length}</strong> producto(s) seleccionados para comparar (máximo 3).
+            </span>
+          }
+        />
       )}
 
       {/* Catalog Items */}
       {paginatedData.length === 0 ? (
-        <Box sx={{ py: 8, textAlign: 'center' }}>
-          <Typography variant="h6" color="var(--text)">
-            Ningún aire acondicionado coincide con los filtros aplicados.
-          </Typography>
-        </Box>
+        <AlertUI
+          severity="info"
+          message="Ningún aire acondicionado coincide con los filtros aplicados."
+        />
       ) : viewMode === 'grid' ? (
-        <Grid container spacing={3}>
+        <GridUI.Container spacing={3}>
           {paginatedData.map((item) => {
             const isSelected = selectedToCompare.includes(item.id);
             const isCompareDisabled = !isSelected && selectedToCompare.length >= 3;
             const isHighRated = item.star >= 4.3;
 
             return (
-              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={item.id}>
+              <GridUI.Item xs={12} sm={6} md={4} lg={3} key={item.id}>
                 <Card
                   className="product-card"
                   sx={{
@@ -268,7 +240,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                     />
                   )}
 
-                  {/* Compare Selection Checkbox */}
+                  {/* Compare Selection Checkbox with onChange */}
                   <Box
                     sx={{
                       position: 'absolute',
@@ -377,12 +349,12 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                     </Box>
                   </CardActions>
                 </Card>
-              </Grid>
+              </GridUI.Item>
             );
           })}
-        </Grid>
+        </GridUI.Container>
       ) : (
-        /* List Mode View */
+        /* List Mode View using GridUI wrapper if needed */
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {paginatedData.map((item) => {
             const isSelected = selectedToCompare.includes(item.id);
@@ -402,7 +374,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                   position: 'relative',
                 }}
               >
-                {/* Checkbox */}
+                {/* Checkbox with onChange */}
                 <Box sx={{ mr: 1 }}>
                   <Checkbox
                     checked={isSelected}

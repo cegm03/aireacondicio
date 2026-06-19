@@ -149,7 +149,6 @@ export async function fetchAndParseDataset(): Promise<AirConditioner[]> {
     }
 
     const raw = snapshot.val() as Record<string, RawACRecord> | RawACRecord[];
-    // Firebase can return an array or an object of objects
     const records: RawACRecord[] = Array.isArray(raw)
       ? raw
       : Object.values(raw);
@@ -168,7 +167,6 @@ export async function fetchAndParseDataset(): Promise<AirConditioner[]> {
       let rawPrice = record.Price ?? "0";
       let rawImage = String(record.Image_url || "");
 
-      // Apply brand/ton normalisation (may override other fields)
       const { brand, ton, overrides } = normalizeBrandAndTon(rawBrand, rawTon, record);
       if (Object.keys(overrides).length > 0) {
         rawCoil = String(overrides.Condenser_Coil || rawCoil);
@@ -182,7 +180,7 @@ export async function fetchAndParseDataset(): Promise<AirConditioner[]> {
       }
 
       const price = parsePrice(rawPrice);
-      if (price === 0) return; // skip records without a price
+      if (price === 0) return;
 
       items.push({
         id: index,
@@ -199,9 +197,10 @@ export async function fetchAndParseDataset(): Promise<AirConditioner[]> {
       });
     });
 
+    console.log(`Firebase: ${items.length} registros cargados correctamente.`);
     return items;
   } catch (error) {
-    console.error("Error fetching data from Firebase:", error);
+    console.error("Error al conectar con Firebase:", error);
     return [];
   }
 }

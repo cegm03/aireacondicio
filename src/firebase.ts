@@ -6,7 +6,7 @@ import { getDatabase } from "firebase/database";
 const firebaseConfig = {
     apiKey: "AIzaSyD2qhzupVNV3K2mCFJQsmz5Ftjg9oThwps",
     authDomain: "airconditiondatabase.firebaseapp.com",
-    databaseURL: "https://airconditiondatabase-default-rtdb.firebaseio.com/data.json",
+    databaseURL: "https://airconditiondatabase-default-rtdb.firebaseio.com",
     projectId: "airconditiondatabase",
     storageBucket: "airconditiondatabase.firebasestorage.app",
     messagingSenderId: "704845705220",
@@ -19,3 +19,5 @@ const app = initializeApp(firebaseConfig);
 
 // Export Realtime Database instance
 export const db = getDatabase(app);
+/*export const DATA_JSON_URL =
+    "https://airconditiondatabase-default-rtdb.firebaseio.com/data.json";*/

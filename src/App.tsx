@@ -1,30 +1,19 @@
 import { useState, useEffect } from 'react';
 import {
   Box,
-  AppBar,
-  Toolbar,
-  Typography,
-  Button,
-  IconButton,
-  Grid,
   CircularProgress,
-  Badge,
+  Typography,
   Container,
 } from '@mui/material';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import StorefrontIcon from '@mui/icons-material/Storefront';
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
-import DescriptionIcon from '@mui/icons-material/Description';
-import AcUnitIcon from '@mui/icons-material/AcUnit';
 
-import { fetchAndParseDataset, type AirConditioner } from './utils/firebaseService';
 import { SidebarFilters, type FilterState } from './components/SidebarFilters';
 import { DashboardView } from './components/DashboardView';
 import { CatalogView } from './components/CatalogView';
 import { ComparisonView } from './components/ComparisonView';
 import { DocumentationView } from './components/DocumentationView';
+import { useFetchData } from './hooks/useFetchData';
+import { HeaderUI } from './components/common/HeaderUI';
+import GridUI from './components/common/GridUI';
 
 const defaultFilters: FilterState = {
   search: '',
@@ -36,8 +25,7 @@ const defaultFilters: FilterState = {
 };
 
 function App() {
-  const [rawData, setRawData] = useState<AirConditioner[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const { data: rawData, loading } = useFetchData();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'catalog' | 'compare' | 'docs'>('dashboard');
   const [selectedToCompare, setSelectedToCompare] = useState<number[]>([]);
   const [darkMode, setDarkMode] = useState<boolean>(true);
@@ -46,26 +34,19 @@ function App() {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
 
   // Load dataset
+  // Sync filters price range when rawData updates
   useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      const items = await fetchAndParseDataset();
-      setRawData(items);
-
-      if (items.length > 0) {
-        const prices = items.map((i) => i.price);
-        const minPrice = Math.min(...prices);
-        const maxPrice = Math.max(...prices);
-        setMinMaxPrice([minPrice, maxPrice]);
-        setFilters((prev) => ({
-          ...prev,
-          priceRange: [minPrice, maxPrice],
-        }));
-      }
-      setLoading(false);
+    if (rawData.length > 0) {
+      const prices = rawData.map((i) => i.price);
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      setMinMaxPrice([minPrice, maxPrice]);
+      setFilters((prev) => ({
+        ...prev,
+        priceRange: [minPrice, maxPrice],
+      }));
     }
-    loadData();
-  }, []);
+  }, [rawData]);
 
   // Sync dark mode class with document body
   useEffect(() => {
@@ -158,114 +139,14 @@ function App() {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%' }}>
-      {/* Navigation Header */}
-      <AppBar position="sticky" sx={{ background: 'var(--code-bg)', borderBottom: '1px solid var(--border)', boxShadow: 'none' }}>
-        <Container maxWidth="xl">
-          <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
-            {/* Title / Logo */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <AcUnitIcon sx={{ color: 'var(--accent)', fontSize: '1.8rem' }} />
-              <Typography
-                variant="h6"
-                noWrap
-                sx={{
-                  color: 'var(--text-h)',
-                  letterSpacing: '-0.5px',
-                  background: 'linear-gradient(90deg, var(--accent) 0%, #3b82f6 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  fontWeight: '800',
-                }}
-              >
-                ClimaSatis
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'var(--text)', ml: 1, display: { xs: 'none', sm: 'block' }, borderLeft: '1px solid var(--border)', pl: 1 }}>
-                AC Analytics & Catalog
-              </Typography>
-            </Box>
-
-            {/* Desktop Navigation Links */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, md: 1 } }}>
-              <Button
-                color="inherit"
-                onClick={() => setActiveTab('dashboard')}
-                startIcon={<DashboardIcon />}
-                sx={{
-                  textTransform: 'none',
-                  fontWeight: activeTab === 'dashboard' ? '700' : '500',
-                  color: activeTab === 'dashboard' ? 'var(--accent)' : 'var(--text)',
-                  backgroundColor: activeTab === 'dashboard' ? 'var(--accent-bg)' : 'transparent',
-                  '&:hover': { backgroundColor: 'var(--accent-bg)' },
-                  borderRadius: '10px',
-                  px: 2,
-                }}
-              >
-                Analíticas
-              </Button>
-              
-              <Button
-                color="inherit"
-                onClick={() => setActiveTab('catalog')}
-                startIcon={<StorefrontIcon />}
-                sx={{
-                  textTransform: 'none',
-                  fontWeight: activeTab === 'catalog' ? '700' : '500',
-                  color: activeTab === 'catalog' ? 'var(--accent)' : 'var(--text)',
-                  backgroundColor: activeTab === 'catalog' ? 'var(--accent-bg)' : 'transparent',
-                  '&:hover': { backgroundColor: 'var(--accent-bg)' },
-                  borderRadius: '10px',
-                  px: 2,
-                }}
-              >
-                Catálogo
-              </Button>
-              
-              <Button
-                color="inherit"
-                onClick={() => setActiveTab('compare')}
-                startIcon={
-                  <Badge badgeContent={selectedToCompare.length} color="primary" sx={{ '& .MuiBadge-badge': { backgroundColor: 'var(--accent)' } }}>
-                    <CompareArrowsIcon />
-                  </Badge>
-                }
-                sx={{
-                  textTransform: 'none',
-                  fontWeight: activeTab === 'compare' ? '700' : '500',
-                  color: activeTab === 'compare' ? 'var(--accent)' : 'var(--text)',
-                  backgroundColor: activeTab === 'compare' ? 'var(--accent-bg)' : 'transparent',
-                  '&:hover': { backgroundColor: 'var(--accent-bg)' },
-                  borderRadius: '10px',
-                  px: 2,
-                }}
-              >
-                Comparador
-              </Button>
-              
-              <Button
-                color="inherit"
-                onClick={() => setActiveTab('docs')}
-                startIcon={<DescriptionIcon />}
-                sx={{
-                  textTransform: 'none',
-                  fontWeight: activeTab === 'docs' ? '700' : '500',
-                  color: activeTab === 'docs' ? 'var(--accent)' : 'var(--text)',
-                  backgroundColor: activeTab === 'docs' ? 'var(--accent-bg)' : 'transparent',
-                  '&:hover': { backgroundColor: 'var(--accent-bg)' },
-                  borderRadius: '10px',
-                  px: 2,
-                }}
-              >
-                Proyecto
-              </Button>
-
-              {/* Theme Toggle Button */}
-              <IconButton onClick={() => setDarkMode(!darkMode)} sx={{ color: 'var(--text)', ml: 1 }}>
-                {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
-              </IconButton>
-            </Box>
-          </Toolbar>
-        </Container>
-      </AppBar>
+      {/* Navigation Header Component */}
+      <HeaderUI
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        compareCount={selectedToCompare.length}
+      />
 
       {/* Main Layout Container */}
       <Container maxWidth="xl" sx={{ flexGrow: 1, py: 4, display: 'flex', flexDirection: 'column' }}>
@@ -277,10 +158,10 @@ function App() {
             </Typography>
           </Box>
         ) : (
-          <Grid container spacing={3} sx={{ flexGrow: 1 }}>
+          <GridUI.Container spacing={3} sx={{ flexGrow: 1 }}>
             {/* Conditional Sidebar filters */}
             {showSidebar && (
-              <Grid size={{ xs: 12, md: 3.2, lg: 2.8 }}>
+              <GridUI.Item xs={12} md={3.2} lg={2.8}>
                 <Box
                   sx={{
                     backgroundColor: 'var(--code-bg)',
@@ -301,11 +182,11 @@ function App() {
                     resetFilters={resetFilters}
                   />
                 </Box>
-              </Grid>
+              </GridUI.Item>
             )}
 
             {/* Main Content Area */}
-            <Grid size={{ xs: 12, md: showSidebar ? 8.8 : 12, lg: showSidebar ? 9.2 : 12 }}>
+            <GridUI.Item xs={12} md={showSidebar ? 8.8 : 12} lg={showSidebar ? 9.2 : 12}>
               <Box sx={{ width: '100%' }}>
                 {activeTab === 'dashboard' && (
                   <DashboardView data={filteredData} />
@@ -328,8 +209,8 @@ function App() {
                   <DocumentationView />
                 )}
               </Box>
-            </Grid>
-          </Grid>
+            </GridUI.Item>
+          </GridUI.Container>
         )}
       </Container>
 
